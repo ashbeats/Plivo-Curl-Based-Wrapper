@@ -98,9 +98,7 @@ class RestAPI
        
         
         //execute the request (the login)
-        $response = curl_exec($ch);
-
-        var_dump($response);
+        $response = curl_exec($ch);        
 		
         if (! empty($response))
         {
