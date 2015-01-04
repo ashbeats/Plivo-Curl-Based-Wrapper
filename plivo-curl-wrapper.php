@@ -1,18 +1,19 @@
-<?php
-
-
-class PlivoError extends Exception { }
-
-
-function validate_signature($uri, $post_params=array(), $signature, $auth_token) {
-    ksort($post_params);
-    foreach($post_params as $key => $value) {
-        $uri .= "$key$value";
-    }
-    $generated_signature = base64_encode(hash_hmac("sha1",$uri, $auth_token, true));
-    return $generated_signature == $signature;
+<?php 
+class PlivoError extends Exception
+{
 }
 
+
+function validate_signature($uri, $post_params = array(), $signature, $auth_token)
+{
+    ksort($post_params);
+    foreach ($post_params as $key=>$value)
+    {
+        $uri .= "$key$value";
+    }
+    $generated_signature = base64_encode(hash_hmac("sha1", $uri, $auth_token, true));
+    return $generated_signature == $signature;
+}
 
 
 class RestAPI
@@ -41,14 +42,14 @@ class RestAPI
         $this->auth_token = $auth_token;
     }
     
-	/***
-	 * Performs the request using Curl. (@ashbeats (John Ashwin Christos))
-	 * 
-	 * @param object $method
-	 * @param object $path
-	 * @param object $params [optional]
-	 * @return 
-	 */
+    /***
+     * Performs the request using Curl. (@ashbeats (John Ashwin Christos))
+     *
+     * @param object $method
+     * @param object $path
+     * @param object $params [optional]
+     * @return
+     */
     private function request($method, $path, $params = array())
     {
     
@@ -60,7 +61,7 @@ class RestAPI
         {
             if (!strcmp($method, "GET") || !strcmp($method, "DELETE"))
             {
-                $url = $url . "?" . http_build_query($params);
+                $url = $url."?".http_build_query($params);
             }
         }
 
@@ -68,13 +69,14 @@ class RestAPI
         //Set the URL to work with
         curl_setopt($ch, CURLOPT_URL, $url);
         
+		curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: close'));
+		curl_setopt($ch, CURLOPT_USERAGENT, 'PHPPlivo');
+		
         if (!strcmp($method, "POST"))
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Connection: close', 'Content-type: application/json'));
+            curl_setopt($ch, CURLOPT_HTTPHEADER, array('Content-type: application/json'));
             
-        curl_setopt($ch, CURLOPT_TIMEOUT, 30);
-        
+        curl_setopt($ch, CURLOPT_TIMEOUT, 30);        
         curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, 0);
-        curl_setopt($ch, CURLOPT_USERAGENT, 'PHPPlivo');
         curl_setopt($ch, CURLOPT_VERBOSE, 0);
         
         if (!strcmp($method, "POST"))
@@ -95,11 +97,11 @@ class RestAPI
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
         
         curl_setopt($ch, CURLOPT_USERPWD, $this->auth_id.':'.$this->auth_token);
-       
+
         
         //execute the request (the login)
-        $response = curl_exec($ch);        
-		
+        $response = curl_exec($ch);
+        
         if (! empty($response))
         {
             $info = curl_getinfo($ch);
@@ -116,8 +118,8 @@ class RestAPI
 
         
     }
+
     
-      
     private function pop($params, $key)
     {
         $val = $params[$key];
@@ -687,365 +689,423 @@ class RestAPI
 
 /* XML */
 
-class Element {
+class Element
+{
     protected $nestables = array();
-
+    
     protected $valid_attributes = array();
-
+    
     protected $attributes = array();
-
+    
     protected $name;
-
+    
     protected $body = NULL;
-
+    
     protected $childs = array();
-
-    function __construct($body='', $attributes=array()) {
+    
+    function __construct($body = '', $attributes = array())
+    {
         $this->attributes = $attributes;
-        if ((!$attributes) || ($attributes === null)) {
+        if ((!$attributes) || ($attributes === null))
+        {
             $this->attributes = array();
         }
         $this->name = get_class($this);
         $this->body = $body;
-        foreach ($this->attributes as $key => $value) {
-            if (!in_array($key, $this->valid_attributes)) {
+        foreach ($this->attributes as $key=>$value)
+        {
+            if (!in_array($key, $this->valid_attributes))
+            {
                 throw new PlivoError("invalid attribute ".$key." for ".$this->name);
             }
             $this->attributes[$key] = $this->convert_value($value);
         }
     }
-
-    protected function convert_value($v) {
-        if ($v === TRUE) {
+    
+    protected function convert_value($v)
+    {
+        if ($v === TRUE)
+        {
             return "true";
         }
-        if ($v === FALSE) {
+        if ($v === FALSE)
+        {
             return "false";
         }
-        if ($v === NULL) {
+        if ($v === NULL)
+        {
             return "none";
         }
-        if ($v === "get") {
+        if ($v === "get")
+        {
             return "GET";
         }
-        if ($v === "post") {
+        if ($v === "post")
+        {
             return "POST";
         }
         return $v;
     }
-
-    function addSpeak($body=NULL, $attributes=array()) {
-        return $this->add(new Speak($body, $attributes));
+    
+    function addSpeak($body = NULL, $attributes = array())
+    {
+        return $this->add( new Speak($body, $attributes));
     }
-
-    function addPlay($body=NULL, $attributes=array()) {
-        return $this->add(new Play($body, $attributes));
+    
+    function addPlay($body = NULL, $attributes = array())
+    {
+        return $this->add( new Play($body, $attributes));
     }
-
-    function addDial($body=NULL, $attributes=array()) {
-        return $this->add(new Dial($body, $attributes));
+    
+    function addDial($body = NULL, $attributes = array())
+    {
+        return $this->add( new Dial($body, $attributes));
     }
-
-    function addNumber($body=NULL, $attributes=array()) {
-        return $this->add(new Number($body, $attributes));
+    
+    function addNumber($body = NULL, $attributes = array())
+    {
+        return $this->add( new Number($body, $attributes));
     }
-
-    function addUser($body=NULL, $attributes=array()) {
-        return $this->add(new User($body, $attributes));
+    
+    function addUser($body = NULL, $attributes = array())
+    {
+        return $this->add( new User($body, $attributes));
     }
-
-    function addGetDigits($attributes=array()) {
-        return $this->add(new GetDigits($attributes));
+    
+    function addGetDigits($attributes = array())
+    {
+        return $this->add( new GetDigits($attributes));
     }
-
-    function addRecord($attributes=array()) {
-        return $this->add(new Record($attributes));
+    
+    function addRecord($attributes = array())
+    {
+        return $this->add( new Record($attributes));
     }
-
-    function addHangup($attributes=array()) {
-        return $this->add(new Hangup($attributes));
+    
+    function addHangup($attributes = array())
+    {
+        return $this->add( new Hangup($attributes));
     }
-
-    function addRedirect($body=NULL, $attributes=array()) {
-        return $this->add(new Redirect($body, $attributes));
+    
+    function addRedirect($body = NULL, $attributes = array())
+    {
+        return $this->add( new Redirect($body, $attributes));
     }
-
-    function addWait($attributes=array()) {
-        return $this->add(new Wait($attributes));
+    
+    function addWait($attributes = array())
+    {
+        return $this->add( new Wait($attributes));
     }
-
-    function addConference($body=NULL, $attributes=array()) {
-        return $this->add(new Conference($body, $attributes));
+    
+    function addConference($body = NULL, $attributes = array())
+    {
+        return $this->add( new Conference($body, $attributes));
     }
-
-    function addPreAnswer($attributes=array()) {
-        return $this->add(new PreAnswer($attributes));
+    
+    function addPreAnswer($attributes = array())
+    {
+        return $this->add( new PreAnswer($attributes));
     }
-
-    function addMessage($body=NULL, $attributes=array()) {
-        return $this->add(new Message($body, $attributes));
+    
+    function addMessage($body = NULL, $attributes = array())
+    {
+        return $this->add( new Message($body, $attributes));
     }
-
-    function addDTMF($body=NULL, $attributes=array()) {
-        return $this->add(new DTMF($body, $attributes));
+    
+    function addDTMF($body = NULL, $attributes = array())
+    {
+        return $this->add( new DTMF($body, $attributes));
     }
-
-    public function getName() {
+    
+    public function getName()
+    {
         return $this->name;
     }
-
-    protected function add($element) {
-        if (!in_array($element->getName(), $this->nestables)) {
+    
+    protected function add($element)
+    {
+        if (!in_array($element->getName(), $this->nestables))
+        {
             throw new PlivoError($element->getName()." not nestable in ".$this->getName());
         }
         $this->childs[] = $element;
         return $element;
     }
-
-    public function setAttributes($xml) {
-        foreach ($this->attributes as $key => $value) {
+    
+    public function setAttributes($xml)
+    {
+        foreach ($this->attributes as $key=>$value)
+        {
             $xml->addAttribute($key, $value);
         }
     }
-
-    public function asChild($xml) {
-        if ($this->body) {
+    
+    public function asChild($xml)
+    {
+        if ($this->body)
+        {
             $child_xml = $xml->addChild($this->getName(), htmlspecialchars($this->body));
-        } else {
+        } else
+        {
             $child_xml = $xml->addChild($this->getName());
         }
         $this->setAttributes($child_xml);
-        foreach ($this->childs as $child) {
+        foreach ($this->childs as $child)
+        {
             $child->asChild($child_xml);
         }
     }
-
-    public function toXML($header=FALSE) {
-        if (!(isset($xmlstr))) {
+    
+    public function toXML($header = FALSE)
+    {
+        if (!(isset($xmlstr)))
+        {
             $xmlstr = '';
         }
-
-        if ($this->body) {
+        
+        if ($this->body)
+        {
             $xmlstr .= "<".$this->getName().">".htmlspecialchars($this->body)."</".$this->getName().">";
-        } else {
+        } else
+        {
             $xmlstr .= "<".$this->getName()."></".$this->getName().">";
         }
-        if ($header === TRUE) {
+        if ($header === TRUE)
+        {
             $xmlstr = "<?xml version=\"1.0\" encoding=\"utf-8\" ?>".$xmlstr;
         }
         $xml = new SimpleXMLElement($xmlstr);
         $this->setAttributes($xml);
-        foreach ($this->childs as $child) {
+        foreach ($this->childs as $child)
+        {
             $child->asChild($xml);
         }
         return $xml->asXML();
     }
-
-    public function __toString() {
+    
+    public function __toString()
+    {
         return $this->toXML();
     }
-
+    
 }
 
-class Response extends Element {
-    protected $nestables = array('Speak', 'Play', 'GetDigits', 'Record',
-                                 'Dial', 'Redirect', 'Wait', 'Hangup',
-                                 'PreAnswer', 'Conference', 'DTMF', 'Message');
-
-    function __construct() {
+class Response extends Element
+{
+    protected $nestables = array('Speak', 'Play', 'GetDigits', 'Record', 'Dial', 'Redirect', 'Wait', 'Hangup', 'PreAnswer', 'Conference', 'DTMF', 'Message');
+    
+    function __construct()
+    {
         parent::__construct(NULL);
     }
-
-    public function toXML($header=TRUE) {
+    
+    public function toXML($header = TRUE)
+    {
         $xml = parent::toXML($header);
         return $xml;
     }
 }
 
 
-class Speak extends Element {
+class Speak extends Element
+{
     protected $nestables = array();
-
+    
     protected $valid_attributes = array('voice', 'language', 'loop');
-
-    function __construct($body, $attributes=array()) {
+    
+    function __construct($body, $attributes = array())
+    {
         parent::__construct($body, $attributes);
-        if (!$body) {
+        if (!$body)
+        {
             throw new PlivoError("No text set for ".$this->getName());
         }
     }
 }
 
-class Play extends Element {
+class Play extends Element
+{
     protected $nestables = array();
-
+    
     protected $valid_attributes = array('loop');
-
-    function __construct($body, $attributes=array()) {
+    
+    function __construct($body, $attributes = array())
+    {
         parent::__construct($body, $attributes);
-        if (!$body) {
+        if (!$body)
+        {
             throw new PlivoError("No url set for ".$this->getName());
         }
     }
 }
 
-class Wait extends Element {
+class Wait extends Element
+{
     protected $nestables = array();
-
+    
     protected $valid_attributes = array('length', 'silence', 'min_silence', 'minSilence', 'beep');
-
-    function __construct($attributes=array()) {
+    
+    function __construct($attributes = array())
+    {
         parent::__construct(NULL, $attributes);
     }
 }
 
-class Redirect extends Element {
+class Redirect extends Element
+{
     protected $nestables = array();
-
+    
     protected $valid_attributes = array('method');
-
-    function __construct($body, $attributes=array()) {
+    
+    function __construct($body, $attributes = array())
+    {
         parent::__construct($body, $attributes);
-        if (!$body) {
+        if (!$body)
+        {
             throw new PlivoError("No url set for ".$this->getName());
         }
     }
 }
 
-class Hangup extends Element {
+class Hangup extends Element
+{
     protected $nestables = array();
-
+    
     protected $valid_attributes = array('schedule', 'reason');
-
-    function __construct($attributes=array()) {
+    
+    function __construct($attributes = array())
+    {
         parent::__construct(NULL, $attributes);
     }
 }
 
-class GetDigits extends Element {
+class GetDigits extends Element
+{
     protected $nestables = array('Speak', 'Play', 'Wait');
-
-    protected $valid_attributes = array('action', 'method', 'timeout', 'digitTimeout',
-                                        'numDigits', 'retries', 'invalidDigitsSound',
-                                        'validDigits', 'playBeep', 'redirect', "finishOnKey",
-                                        'digitTimeout', 'log');
-
-    function __construct($attributes=array()) {
+    
+    protected $valid_attributes = array('action', 'method', 'timeout', 'digitTimeout', 'numDigits', 'retries', 'invalidDigitsSound', 'validDigits', 'playBeep', 'redirect', "finishOnKey", 'digitTimeout', 'log');
+    
+    function __construct($attributes = array())
+    {
         parent::__construct(NULL, $attributes);
     }
 }
 
-class Number extends Element {
+class Number extends Element
+{
     protected $nestables = array();
-
+    
     protected $valid_attributes = array('sendDigits', 'sendOnPreanswer', 'sendDigitsMode');
-
-    function __construct($body, $attributes=array()) {
+    
+    function __construct($body, $attributes = array())
+    {
         parent::__construct($body, $attributes);
-        if (!$body) {
+        if (!$body)
+        {
             throw new PlivoError("No number set for ".$this->getName());
         }
     }
 }
 
-class User extends Element {
+class User extends Element
+{
     protected $nestables = array();
-
+    
     protected $valid_attributes = array('sendDigits', 'sendOnPreanswer', 'sipHeaders');
-
-    function __construct($body, $attributes=array()) {
+    
+    function __construct($body, $attributes = array())
+    {
         parent::__construct($body, $attributes);
-        if (!$body) {
+        if (!$body)
+        {
             throw new PlivoError("No user set for ".$this->getName());
         }
     }
 }
 
-class Dial extends Element {
+class Dial extends Element
+{
     protected $nestables = array('Number', 'User');
-
-    protected $valid_attributes = array('action','method','timeout','hangupOnStar',
-                                        'timeLimit','callerId', 'callerName', 'confirmSound',
-                                        'dialMusic', 'confirmKey', 'redirect',
-                                        'callbackUrl', 'callbackMethod', 'digitsMatch',
-                                        'sipHeaders');
-
-    function __construct($attributes=array()) {
+    
+    protected $valid_attributes = array('action', 'method', 'timeout', 'hangupOnStar', 'timeLimit', 'callerId', 'callerName', 'confirmSound', 'dialMusic', 'confirmKey', 'redirect', 'callbackUrl', 'callbackMethod', 'digitsMatch', 'sipHeaders');
+    
+    function __construct($attributes = array())
+    {
         parent::__construct(NULL, $attributes);
     }
 }
 
-class Conference extends Element {
+class Conference extends Element
+{
     protected $nestables = array();
-
-    protected $valid_attributes = array('muted','beep','startConferenceOnEnter',
-                                        'endConferenceOnExit','waitSound','enterSound', 'exitSound',
-                                        'timeLimit', 'hangupOnStar', 'maxMembers',
-                                        'record', 'recordFileFormat','recordWhenAlone', 'action', 'method', 'redirect',
-                                        'digitsMatch', 'callbackUrl', 'callbackMethod',
-                                        'stayAlone', 'floorEvent',
-                                        'transcriptionType', 'transcriptionUrl',
-                                        'transcriptionMethod', 'relayDTMF');
-
-    function __construct($body, $attributes=array()) {
+    
+    protected $valid_attributes = array('muted', 'beep', 'startConferenceOnEnter', 'endConferenceOnExit', 'waitSound', 'enterSound', 'exitSound', 'timeLimit', 'hangupOnStar', 'maxMembers', 'record', 'recordFileFormat', 'recordWhenAlone', 'action', 'method', 'redirect', 'digitsMatch', 'callbackUrl', 'callbackMethod', 'stayAlone', 'floorEvent', 'transcriptionType', 'transcriptionUrl', 'transcriptionMethod', 'relayDTMF');
+    
+    function __construct($body, $attributes = array())
+    {
         parent::__construct($body, $attributes);
-        if (!$body) {
+        if (!$body)
+        {
             throw new PlivoError("No conference name set for ".$this->getName());
         }
     }
 }
 
-class Record extends Element {
+class Record extends Element
+{
     protected $nestables = array();
-
-    protected $valid_attributes = array('action', 'method', 'timeout','finishOnKey',
-                                        'maxLength', 'playBeep', 'recordSession',
-                                        'startOnDialAnswer', 'redirect', 'fileFormat',
-                                        'callbackUrl', 'callbackMethod',
-                                        'transcriptionType', 'transcriptionUrl',
-                                        'transcriptionMethod');
-
-    function __construct($attributes=array()) {
+    
+    protected $valid_attributes = array('action', 'method', 'timeout', 'finishOnKey', 'maxLength', 'playBeep', 'recordSession', 'startOnDialAnswer', 'redirect', 'fileFormat', 'callbackUrl', 'callbackMethod', 'transcriptionType', 'transcriptionUrl', 'transcriptionMethod');
+    
+    function __construct($attributes = array())
+    {
         parent::__construct(NULL, $attributes);
     }
 }
 
-class PreAnswer extends Element {
+class PreAnswer extends Element
+{
     protected $nestables = array('Play', 'Speak', 'GetDigits', 'Wait', 'Redirect', 'Message', 'DTMF');
-
+    
     protected $valid_attributes = array();
-
-    function __construct($attributes=array()) {
+    
+    function __construct($attributes = array())
+    {
         parent::__construct(NULL, $attributes);
     }
 }
 
-class Message extends Element {
+class Message extends Element
+{
     protected $nestables = array();
-
+    
     protected $valid_attributes = array('src', 'dst', 'type', 'callbackMethod', 'callbackUrl');
-
-    function __construct($body, $attributes=array()) {
+    
+    function __construct($body, $attributes = array())
+    {
         parent::__construct($body, $attributes);
-        if (!$body) {
+        if (!$body)
+        {
             throw new PlivoError("No text set for ".$this->getName());
         }
     }
 }
 
-class DTMF extends Element {
+class DTMF extends Element
+{
     protected $nestables = array();
-
+    
     protected $valid_attributes = array('async');
-
-    function __construct($body, $attributes=array()) {
+    
+    function __construct($body, $attributes = array())
+    {
         parent::__construct($body, $attributes);
-        if (!$body) {
+        if (!$body)
+        {
             throw new PlivoError("No digits set for ".$this->getName());
         }
     }
 }
-
 
 
 /* eof */
