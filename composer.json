@@ -1,0 +1,12 @@
+{
+    "name": "ashbeats/plivo-curl-wrapper",
+    "description": "Plivo-Curl-Based-Wrapper is a drop-in replacement for Plivo's official PHP wrapper. This version, does NOT require PEAR or any other bloated libraries.",
+    "authors": [
+        {
+            "name": "Ash",
+            "email": "ashbeats@gmail.com"
+        }
+    ],
+    "minimum-stability": "dev",
+    "require": {}
+}

@@ -18,10 +18,8 @@ function validate_signature($uri, $post_params = array(), $signature, $auth_toke
 
 class RestAPI
 {
-    private $api;
-    
-    private $auth_id;
-    
+    private $api;    
+    private $auth_id;    
     private $auth_token;
     
     function __construct($auth_id, $auth_token, $url = "https://api.plivo.com", $version = "v1")
