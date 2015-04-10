@@ -6,3 +6,5 @@ dependence on PEAR's HTTP_Request2.
 
 Instead, I opted to go for Curl. 
 
+You can use this class with the examples from the original repo: 
+https://github.com/plivo/plivo-examples-php
