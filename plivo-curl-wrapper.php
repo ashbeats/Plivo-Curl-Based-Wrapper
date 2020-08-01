@@ -104,7 +104,7 @@ class RestAPI
         {
             $info = curl_getinfo($ch);
             $status = $info['http_code'];
-            $response = json_decode($body, true);
+            $response = json_decode($response, true);
             
             curl_close($ch); // close cURL handler
             return array("status"=>$status, "response"=>$response);
